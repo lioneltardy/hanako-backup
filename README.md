@@ -11,6 +11,7 @@ entre le NAS et SwissBackup).
 
 - [Déploiement sur un nouveau NAS Synology](docs/deploiement-nas.md)
 - [Mise en place d'une nouvelle sauvegarde (nouveau site)](docs/nouveau-site.md)
+– [Restauration depuis SwissBackup](docs/restore.md)
 
 ## Prérequis
 
@@ -89,15 +90,7 @@ restic snapshots --host monsite
 restic restore latest --target /chemin/de/restauration
 ```
 
-### Connexion SSH & pauses longues
-
-La connexion SSH est ouverte une fois au début et réutilisée pour toute la
-session (ControlMaster, `ControlPersist=4h`, ping toutes les 60s). Si elle
-finit par tomber (pause très longue, coupure réseau), le script le
-**détecte avant chaque étape** et la rouvre proprement — via la clé SSH si
-`SSH_KEY` est configuré, sinon le mot de passe est redemandé une fois.
-
-### Si ça casse
+### Restauration manuelle depuis le NAS
 
 Chaque snapshot est déposé dans `LOCAL_BACKUP_DIR/<SITE_NAME>/<horodatage>/`
 (`files/` + `database/`). Restauration manuelle :
