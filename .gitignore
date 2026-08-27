@@ -1,0 +1,11 @@
+.DS_Store
+
+configs/*.conf
+!configs/exemple.conf
+
+tasks/*.list
+!tasks/exemple.list
+
+*.log
+*.sql
+*.sql.gz

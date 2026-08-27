@@ -1,0 +1,8 @@
+# Liste des sites à sauvegarder en une seule commande.
+# Un site .conf par ligne (nom seul = résolu dans configs/, ou chemin complet).
+# Lignes vides et # ignorées.
+#
+# Usage :
+#   ./hanako-backup-batch.sh tasks/ma-liste.txt
+
+monsite.conf
