@@ -11,7 +11,7 @@ entre le NAS et SwissBackup).
 
 - [Déploiement sur un nouveau NAS Synology](docs/deploiement-nas.md)
 - [Mise en place d'une nouvelle sauvegarde (nouveau site)](docs/nouveau-site.md)
-– [Restauration depuis SwissBackup](docs/restore.md)
+- [Restauration depuis SwissBackup](docs/restore.md)
 
 ## Prérequis
 
