@@ -6,8 +6,8 @@
 #  Usage : ./hanako-backup-batch.sh tasks/ma-liste.txt
 #
 #  Chaque ligne peut être :
-#    lioneltardy.conf            (résolu dans configs/)
-#    configs/lioneltardy.conf    (chemin explicite)
+#    monsite.conf            (résolu dans configs/)
+#    configs/monsite.conf    (chemin explicite)
 #  Les lignes vides et celles commençant par # sont ignorées.
 #
 #  Le mot de passe/clé SSH de chaque site est géré par hanako-backup.sh

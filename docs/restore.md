@@ -2,11 +2,11 @@
 
 ```bash
 source ~/.restic/swift-env.sh
-export RESTIC_REPOSITORY="swift:hanako-backup:/lioneltardy.com"
-export RESTIC_PASSWORD_FILE=~/.restic/lioneltardy.pass
+export RESTIC_REPOSITORY="swift:hanako-backup:/monsite.com"
+export RESTIC_PASSWORD_FILE=~/.restic/monsite.pass
 
 # Lister les snapshots disponibles
-restic snapshots --host lioneltardy.com
+restic snapshots --host monsite.com
 
 # Restaurer le plus récent en entier
 restic restore latest --target /chemin/de/restauration

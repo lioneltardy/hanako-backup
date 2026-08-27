@@ -119,7 +119,7 @@ suivre [docs/nouveau-site.md](nouveau-site.md) pour chaque site.
 ## 8. Tester un run complet avant de planifier
 
 ```bash
-./hanako-backup.sh configs/lioneltardy.conf
+./hanako-backup.sh configs/monsite.conf
 ```
 Vérifier : connexion SSH par clé, dump DB, sync fichiers, copie SwissBackup,
 purge de rétention (locale + SwissBackup), mail de notification reçu.
