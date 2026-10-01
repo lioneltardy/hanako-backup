@@ -124,7 +124,13 @@ phase "Sauvegarde"
 
 REMOTE_DUMP="/tmp/hanako-backup-${SITE_NAME}-${STAMP}.sql"
 log "Export de la base de données (côté serveur)…"
-if wpr db export "$REMOTE_DUMP" >/dev/null 2>&1; then
+# --all-tables : les tables Matomo ne sont pas enregistrées auprès de $wpdb,
+# "wp db tables" sans ce flag ne les voit donc pas et échoue si on les cible.
+# Pattern sans correspondance (pas de Matomo sur ce site) => sortie vide, pas une erreur bloquante.
+MATOMO_TABLES="$(wpr db tables '*_matomo_*' --all-tables --format=csv 2>/dev/null)"
+EXCLUDE_TABLES_OPT=()
+[[ -n "$MATOMO_TABLES" ]] && EXCLUDE_TABLES_OPT=(--exclude_tables="$MATOMO_TABLES")
+if wpr db export "${EXCLUDE_TABLES_OPT[@]+"${EXCLUDE_TABLES_OPT[@]}"}" "$REMOTE_DUMP" >/dev/null 2>&1; then
   ok "Dump créé sur le serveur."
 else
   err "Échec de l'export DB. Abandon."
