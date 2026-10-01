@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
 #  lib/notify.sh — notification mail de fin de sauvegarde (via msmtp)
-#  Sourcé UNIQUEMENT par hanako-backup.sh.
+#  Sourcé par hanako-backup.sh et hanako-check.sh.
 #
 #  macOS n'a pas de MTA local fonctionnel par défaut : msmtp est un client
 #  SMTP minimal qui se configure avec n'importe quel fournisseur (y compris
@@ -11,9 +11,11 @@
 #  fichier .conf du site.
 # ============================================================
 
-# notify_mail <sujet> <corps>
+# notify_mail <sujet> <corps> [content_type]
+# content_type par défaut "text/plain; charset=UTF-8" ; passer
+# "text/html; charset=UTF-8" pour un corps HTML (ex. tableau de hanako-check.sh).
 notify_mail() {
-  local subject="$1" body="$2"
+  local subject="$1" body="$2" content_type="${3:-text/plain; charset=UTF-8}"
 
   [[ -n "${MAIL_TO:-}" ]] || return 0   # pas de MAIL_TO configuré = notif désactivée
 
@@ -44,6 +46,7 @@ notify_mail() {
   {
     echo "Subject: ${subject}"
     echo "To: ${MAIL_TO}"
+    echo "Content-Type: ${content_type}"
     echo
     echo -e "$body"
   } | "${run_cmd[@]}" "${account_opt[@]+"${account_opt[@]}"}" "$MAIL_TO"

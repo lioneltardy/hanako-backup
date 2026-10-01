@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # ============================================================
 #  hanako-backup-batch.sh — Lance hanako-backup.sh pour une série
-#  de sites listés dans un fichier de tâches (un site .conf par ligne).
+#  de sites listés dans un fichier de tâches (un site .conf par ligne), puis
+#  hanako-check.sh sur la même liste pour un rapport de santé consolidé.
 #
 #  Usage : ./hanako-backup-batch.sh tasks/ma-liste.txt
+#  (destinataire du rapport de santé : voir DIGEST_MAIL_TO en tête de hanako-check.sh)
 #
 #  Chaque ligne peut être :
 #    monsite.conf            (résolu dans configs/)
@@ -61,6 +63,17 @@ done
 echo
 if [[ ${#FAILED[@]} -gt 0 ]]; then
   echo "✗ Échec(s) : ${FAILED[*]}" >&2
+else
+  echo "✓ ${COUNT} sauvegarde(s) terminée(s) sans échec."
+fi
+
+# Rapport de santé consolidé sur la même liste, que le batch ait échoué ou
+# non — c'est justement là qu'un cron de backup mort serait détecté.
+echo
+"$SCRIPT_DIR/hanako-check.sh" "$TASKLIST"
+CHECK_EXIT=$?
+
+if [[ ${#FAILED[@]} -gt 0 ]]; then
   exit 1
 fi
-echo "✓ ${COUNT} sauvegarde(s) terminée(s) sans échec."
+exit "$CHECK_EXIT"

@@ -82,3 +82,65 @@ restic_backup_snapshot() {
     return 1
   fi
 }
+
+# restic_snapshot_stats — poids logique + nb de fichiers du dernier snapshot
+# restic de ce site (files + database), tel que vu côté dépôt. À comparer
+# aux chiffres locaux pour vérifier que la copie offsite est bien complète.
+# Affiche "octets|nb_fichiers" sur stdout, "0|0" si indisponible.
+restic_snapshot_stats() {
+  local json size count
+  json="$(restic stats latest --host "$SITE_NAME" --mode restore-size --json 2>/dev/null)"
+  if [[ -z "$json" ]]; then
+    echo "0|0"
+    return 1
+  fi
+  size="$(echo "$json" | grep -o '"total_size"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$')"
+  count="$(echo "$json" | grep -o '"total_file_count"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$')"
+  echo "${size:-0}|${count:-0}"
+}
+
+# restic_latest_snapshot_epoch — date (epoch) du dernier snapshot restic de
+# ce site. Un écart important avec la date du snapshot local signifie que
+# la copie SwissBackup est PÉRIMÉE (ex. restic_backup_snapshot échoue
+# silencieusement depuis plusieurs jours) : "latest" reste alors un ancien
+# snapshot, avec potentiellement plus ou moins de fichiers que l'état actuel
+# — ce n'est PAS un cumul entre snapshots, juste un snapshot différent.
+# Affiche l'epoch sur stdout, rien si indisponible.
+#
+# Parcourt TOUS les snapshots du host (pas de --latest 1 : ce flag combiné à
+# --host a renvoyé le plus ANCIEN snapshot au lieu du plus récent sur un
+# dépôt réel — mieux vaut recalculer le max nous-mêmes que faire confiance à
+# l'ordre de sortie de restic).
+restic_latest_snapshot_epoch() {
+  local json times iso epoch max_epoch=0 found=0
+  json="$(restic snapshots --host "$SITE_NAME" --json 2>/dev/null)"
+  [[ -n "$json" ]] || return 1
+  times="$(echo "$json" | grep -o '"time"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')"
+  [[ -n "$times" ]] || return 1
+  while IFS= read -r iso; do
+    [[ -z "$iso" ]] && continue
+    epoch="$(date -j -f "%Y-%m-%dT%H:%M:%S" "${iso%%.*}" +%s 2>/dev/null)"
+    [[ -z "$epoch" ]] && epoch="$(date -d "$iso" +%s 2>/dev/null)"
+    [[ -z "$epoch" ]] && continue
+    found=1
+    (( epoch > max_epoch )) && max_epoch="$epoch"
+  done <<< "$times"
+  [[ "$found" -eq 1 ]] || return 1
+  echo "$max_epoch"
+}
+
+# restic_check_repo — vérifie l'intégrité du dépôt (structure + un échantillon
+# des données, RESTIC_CHECK_SUBSET, défaut 5%). Systématique à chaque
+# exécution de hanako-check.sh (pas de hanako-backup.sh, trop coûteux en
+# lecture sur un dépôt Swift distant à chaque sauvegarde). Affiche "ok" ou
+# "fail" sur stdout.
+restic_check_repo() {
+  log "Vérification d'intégrité du dépôt restic (échantillon ${RESTIC_CHECK_SUBSET:-5%})…"
+  if restic check --read-data-subset="${RESTIC_CHECK_SUBSET:-5%}" >/dev/null 2>&1; then
+    ok "Dépôt restic intègre (échantillon)."
+    echo "ok"
+  else
+    err "Échec de la vérification restic (restic check) — dépôt potentiellement corrompu."
+    echo "fail"
+  fi
+}
